@@ -8,4 +8,9 @@ public class ImageDto {
     private String imageName;
     private String downLoadUrl;
 
+    public ImageDto(Long imageId, String imageName, String downLoadUrl) {
+        this.imageId = imageId;
+        this.imageName = imageName;
+        this.downLoadUrl = downLoadUrl;
+    }
 }

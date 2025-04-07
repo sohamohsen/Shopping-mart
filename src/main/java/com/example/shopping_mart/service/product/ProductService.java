@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +24,14 @@ public class ProductService implements IProductService{
 
     @Override
     public Product addProduct(AddProductRequest request) {
-        // Check if the product name already exists
+        // Validate product name
         validateProductName(request.getName());
 
         // Retrieve or create the category
         Category category = getOrCreateCategory(request.getCategory().getName());
 
-        // Create the product instance before saving
+        // Create and save the product
         Product product = createProduct(request, category);
-
-        // Save and return the new product
         return productRepository.save(product);
     }
 
@@ -42,7 +41,7 @@ public class ProductService implements IProductService{
      */
     private void validateProductName(String name) {
         if (productRepository.existsByName(name)) {
-            throw new ProductAlreadyExistsException("A product with name '" + name + "' already exists.");
+            throw new ProductAlreadyExistsException(String.format("A product with name '" + name + "' already exists."));
         }
     }
 
@@ -63,7 +62,6 @@ public class ProductService implements IProductService{
         return categoryRepository.save(newCategory);
     }
 
-
     private Product createProduct(AddProductRequest request, Category category) {
         return new Product(
                 request.getName(),
@@ -83,12 +81,11 @@ public class ProductService implements IProductService{
 
     @Override
     public void deleteProductById(long id) {
-        productRepository.findById(id)
-                .ifPresentOrElse(productRepository::delete,
-                        () -> {
-                            throw new ProductNotFoundException("product not Found!");
-                        });
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + id + " not found!"));
+        productRepository.delete(product);
     }
+
 
     @Override
     public Product updateProduct(ProductUpdateRequest request, long productId) {
@@ -97,6 +94,7 @@ public class ProductService implements IProductService{
                 .map(productRepository::save)
                 .orElseThrow(() -> new ProductNotFoundException("product not Found!"));
     }
+
     private Product updateExistingProduct(Product existingProduct, ProductUpdateRequest request) {
         existingProduct.setName(request.getName());
         existingProduct.setBrand(request.getBrand());
@@ -104,7 +102,7 @@ public class ProductService implements IProductService{
         existingProduct.setInventory(request.getInventory());
         existingProduct.setDescription(request.getDescription());
 
-        Category category = categoryRepository.findByName(request.getCategory().getName());
+        Category category = getOrCreateCategory(request.getCategory().getName());
         existingProduct.setCategory(category);
         return existingProduct;
     }
@@ -133,8 +131,10 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public List<Product> getProductByNAme(String productName) {
-        return productRepository.findByName(productName);
+    public Optional<Product> getProductByName(String productName) {
+        return Optional.ofNullable(productRepository.findByName(productName)
+                .orElseThrow(() -> new ProductNotFoundException("product not Found!")));
+
     }
 
     @Override

@@ -11,7 +11,35 @@ public interface IImageService {
 
     Image getImageById(long id);
     void deleteImageById(long id);
-    List <ImageDto> saveImage(List<MultipartFile> file, Long productId);
-    void updateImage(MultipartFile file, Long imageId) throws IOException;
+    List<ImageDto> saveImage(List<MultipartFile> files, Long productId);
 
+    //    @Override
+    //    public void updateImage(MultipartFile file, Long imageId) {
+    //        Image image = getImageById(imageId);
+    //        try {
+    //            image.setFileName(file.getOriginalFilename());
+    //            image.setFileType(file.getContentType());
+    //            image.setImage(new SerialBlob(file.getBytes()));
+    //            imageRepository.save(image);
+    //        } catch (IOException | SQLException e) {
+    //            throw new RuntimeException(e.getMessage());
+    //        }
+    //
+    //    }
+    void updateImage(MultipartFile file, Long imageId);
+
+
+    //    @Override
+    //    public void updateImage(MultipartFile file, Long imageId) {
+    //        Image image = getImageById(imageId);
+    //        try {
+    //            image.setFileName(file.getOriginalFilename());
+    //            image.setFileType(file.getContentType());
+    //            image.setImage(new SerialBlob(file.getBytes()));
+    //            imageRepository.save(image);
+    //        } catch (IOException | SQLException e) {
+    //            throw new RuntimeException(e.getMessage());
+    //        }
+    //
+    //    }
 }
