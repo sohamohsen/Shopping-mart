@@ -1,5 +1,7 @@
 package com.example.shopping_mart.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,11 +18,13 @@ public class Image {
     private String fileType;
 
     @Lob
+    @JsonIgnore
     private Blob image;
     private String downloadUrl;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
 }

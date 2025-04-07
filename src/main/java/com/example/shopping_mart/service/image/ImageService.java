@@ -1,10 +1,13 @@
 package com.example.shopping_mart.service.image;
 
 import com.example.shopping_mart.dto.ImageDto;
+import com.example.shopping_mart.exceptions.CategoryNotFoundException;
 import com.example.shopping_mart.exceptions.ImageNotFoundExceptionError;
+import com.example.shopping_mart.exceptions.ProductNotFoundException;
 import com.example.shopping_mart.model.Image;
 import com.example.shopping_mart.model.Product;
 import com.example.shopping_mart.repository.ImageRepository;
+import com.example.shopping_mart.repository.ProductRepository;
 import com.example.shopping_mart.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -24,6 +27,7 @@ public class ImageService implements IImageService {
 
     private static final Logger log = LoggerFactory.getLogger(ImageService.class);
     private final ImageRepository imageRepository;
+    private final ProductRepository productRepository;
     private final ProductService productService;
 
 
@@ -51,11 +55,9 @@ public class ImageService implements IImageService {
                 image.setFileType(file.getContentType());
                 image.setImage(new SerialBlob(file.getBytes()));
                 image.setProduct(product);
-                String buildDownloadUrl = "/api/v1/images/image/download/";
-                String downloadUrl = buildDownloadUrl+image.getId();
-                image.setDownloadUrl(downloadUrl);
                 Image savedImage = imageRepository.save(image);
 
+                String buildDownloadUrl = "/api/v1/images/image/download/";
                 savedImage.setDownloadUrl(buildDownloadUrl+savedImage.getId());
                 imageRepository.save(savedImage);
 
@@ -87,5 +89,28 @@ public class ImageService implements IImageService {
             throw new RuntimeException(e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<ImageDto> getImagesByProductId(Long productId) {
+        // Check if the category exists in the system
+        boolean productExists = productRepository.existsById(productId); // Assume this method exists
+        if (!productExists) {
+            throw new ProductNotFoundException("Product not found: " + productId);
+        }
+
+        List<Image> images = imageRepository.findByProductId(productId);
+        if (images.isEmpty()) {
+            throw new ImageNotFoundExceptionError("No image found with product id: " + productId);
+
+        } else {
+            List<ImageDto> imageDtos = new ArrayList<>();
+
+            for (Image image : images) {
+                ImageDto dto = new ImageDto(image.getId(), image.getFileName(), image.getDownloadUrl());
+                imageDtos.add(dto);
+            }
+            return imageDtos;
+        }
     }
 }

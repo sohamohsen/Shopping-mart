@@ -1,7 +1,9 @@
 package com.example.shopping_mart.controller;
 
 import com.example.shopping_mart.dto.ImageDto;
+import com.example.shopping_mart.exceptions.CategoryNotFoundException;
 import com.example.shopping_mart.exceptions.ImageNotFoundExceptionError;
+import com.example.shopping_mart.exceptions.ProductNotFoundException;
 import com.example.shopping_mart.exceptions.ResourceNotFoundException;
 import com.example.shopping_mart.model.Image;
 import com.example.shopping_mart.response.ApiResponse;
@@ -64,6 +66,19 @@ public class ImageController {
                 .body(resource);
     }
 
+    @GetMapping("/productimages/{productId}")
+    public ResponseEntity<ApiResponse> getImagesByProductId(@PathVariable Long productId) {
+        try {
+            List <ImageDto> images = imageService.getImagesByProductId(productId);
+            return ResponseEntity.ok(new ApiResponse("Images: ", images));
+        } catch (ProductNotFoundException | ImageNotFoundExceptionError e) {
+            return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("Upload failed!", e.getMessage()));
+        }
+    }
+
+
     @PutMapping("/update/{imageId}")
     public ResponseEntity<ApiResponse> updateImage(@RequestParam MultipartFile files, @PathVariable long imageId) {
         try {
@@ -91,4 +106,5 @@ public class ImageController {
         }
         return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("Delete failed!", INTERNAL_SERVER_ERROR));
     }
+
 }

@@ -1,5 +1,6 @@
 package com.example.shopping_mart.service.product;
 
+import com.example.shopping_mart.exceptions.CategoryNotFoundException;
 import com.example.shopping_mart.exceptions.ProductAlreadyExistsException;
 import com.example.shopping_mart.exceptions.ProductNotFoundException;
 import com.example.shopping_mart.model.Category;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +32,9 @@ public class ProductService implements IProductService{
 
         // Create and save the product
         Product product = createProduct(request, category);
+
+        // Set images to null
+        product.setImages(null);
         return productRepository.save(product);
     }
 
@@ -114,11 +117,22 @@ public class ProductService implements IProductService{
 
     @Override
     public List<Product> getProductsByCategory(String category) {
-        List <Product> products = productRepository.findByCategoryName(category);
+        // Check if the category exists in the system
+        boolean categoryExists = productRepository.existsByCategoryName(category); // Assume this method exists
+
+        if (!categoryExists) {
+            throw new CategoryNotFoundException("Category not found: " + category);
+        }
+
+        // If category exists, get the products by category
+        List<Product> products = productRepository.findByCategoryName(category);
+
         if (products.isEmpty()) {
-            throw new ProductNotFoundException("there are no products in that category!");
-        } return products;
+            throw new ProductNotFoundException("There are no products in that category!");
+        }
+        return products;
     }
+
 
     @Override
     public List<Product> getProductByBrand(String brand) {
