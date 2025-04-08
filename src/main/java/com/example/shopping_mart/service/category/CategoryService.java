@@ -4,7 +4,6 @@ import com.example.shopping_mart.exceptions.AlreadyExistsException;
 import com.example.shopping_mart.exceptions.CategoryNotFoundException;
 import com.example.shopping_mart.model.Category;
 import com.example.shopping_mart.repository.CategoryRepository;
-import com.example.shopping_mart.request.AddCategoryRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

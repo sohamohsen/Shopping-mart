@@ -89,7 +89,6 @@ public class ProductService implements IProductService{
         productRepository.delete(product);
     }
 
-
     @Override
     public Product updateProduct(ProductUpdateRequest request, long productId) {
         return productRepository.findById(productId)
@@ -112,6 +111,10 @@ public class ProductService implements IProductService{
 
     @Override
     public List<Product> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("product not Found!");
+        }
         return productRepository.findAll();
     }
 
@@ -136,12 +139,31 @@ public class ProductService implements IProductService{
 
     @Override
     public List<Product> getProductByBrand(String brand) {
-        return productRepository.findByBrand(brand);
+        if (!productRepository.existsByBrand(brand)) {
+            throw new ProductNotFoundException("brand  not found!");
+        }
+
+        List<Product> products = productRepository.findByBrand(brand);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("There are no products in that brand!" + brand);
+        }
+        return products;
     }
 
     @Override
     public List<Product> getProductByCategoryAndBrand(String category, String brand) {
-        return productRepository.findByCategoryNameAndBrand(category, brand);
+        if (!productRepository.existsByCategoryName(category)) {
+            System.out.println("Category not found: " + category);
+            throw new CategoryNotFoundException("Category not found: " + category);
+        }else if (!productRepository.existsByBrand(brand)){
+            throw new ProductNotFoundException("There is no products with this brand!" + brand);
+        }
+
+        List <Product> products = productRepository.findByCategoryNameAndBrand(category, brand);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("There are no products with this brand and category!" + brand);
+        }
+        return products;
     }
 
     @Override
@@ -158,6 +180,18 @@ public class ProductService implements IProductService{
 
     @Override
     public Long countProductsByBrandAndName(String brand, String productName) {
-        return productRepository.countByBrandAndName(brand, productName);
+        try {
+            Long count = productRepository.countByBrandAndName(brand, productName);
+            // Optional: Throw an exception if count is null (depends on your logic)
+            if (count == null) {
+                throw new IllegalStateException("Unexpected null result from repository");
+            }
+            return count;
+        } catch (Exception ex) {
+            // Log the error (use a proper logger in production)
+            System.err.println("Failed to count products by brand and name: " + ex.getMessage());
+            // Wrap and rethrow as a custom or runtime exception
+            throw new RuntimeException("Failed to retrieve product count due to an internal error", ex);
+        }
     }
 }

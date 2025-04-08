@@ -1,6 +1,8 @@
 package com.example.shopping_mart.model;
 
+import com.example.shopping_mart.dto.ProductDto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,13 +24,12 @@ public class Product {
     private int inventory;
     private String brand;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @JsonBackReference
     private Category category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+//    @JsonIgnore
     private List<Image> images;
 
     public Product(String name, String brand, String description, int inventory, BigDecimal price, Category category) {
@@ -38,5 +39,15 @@ public class Product {
         this.inventory = inventory;
         this.price = price;
         this.category = category;
+    }
+
+    public Product(ProductDto productDto){
+        this.name = productDto.getName();
+        this.brand = productDto.getBrand();
+        this.description = productDto.getDescription();
+        this.inventory = productDto.getInventory();
+        this.price = productDto.getPrice();
+        this.category = productDto.getCategory();
+        this.images = productDto.getImages();
     }
 }
